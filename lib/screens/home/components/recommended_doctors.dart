@@ -13,8 +13,6 @@ class RecommendedDoctors extends StatelessWidget {
   }) : super(key: key);
 
   Future<List<RecommendedDoctor>?> getRecommendDoctorList() async {
-    
-    print('Hello');
 
     List<RecommendedDoctor>? doctorList = await checker();
     print(doctorList);
@@ -26,7 +24,6 @@ class RecommendedDoctors extends StatelessWidget {
     List<RecommendedDoctor> doctorList = [];
     await ref.get().then((value) => {
       value.docs.forEach((element) async {
-        print(element.data());
         doctorList.add(
            RecommendedDoctor(
               name: await element.get("name"),
@@ -37,7 +34,6 @@ class RecommendedDoctors extends StatelessWidget {
         );
       })
     });
-    print(doctorList);
     return doctorList;
 
   }

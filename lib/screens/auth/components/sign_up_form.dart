@@ -1,8 +1,11 @@
+import 'package:doctor/screens/auth/components/sign_in_form.dart';
+import 'package:doctor/screens/auth/sign_in_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 
 import '../../../constants.dart';
+import '../../main/main_screen.dart';
 
 class SignUpForm extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
@@ -53,7 +56,7 @@ class SignUpForm extends StatelessWidget {
           ),
           TextFormField(
             validator: (val) =>
-                MatchValidator(errorText: 'passwords do not match')
+                MatchValidator(errorText: 'Passwords do not match')
                     .validateMatch(val!, _password),
             obscureText: true,
             onSaved: (newValue) {},
@@ -63,54 +66,69 @@ class SignUpForm extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              // onPressed: () async {
-              //   if (_formKey.currentState!.validate()) {
-              //     _formKey.currentState!.save();
-              //     // try {
-              //     //   print('Hello');
-              //     //   UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-              //     //       email: "barra.allen@example.com",
-              //     //       password: "SuperSecretPassword!"
-              //     //   );
-              //     // } on FirebaseAuthException catch (e) {
-              //     //   if (e.code == 'weak-password') {
-              //     //     print('The password provided is too weak.');
-              //     //   } else if (e.code == 'email-already-in-use') {
-              //     //     print('The account already exists for that email.');
-              //     //   }
-              //     // } catch (e) {
-              //     //   print(e);
-              //     // }
-              //
-              //     // try {
-              //     //   UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-              //     //       email: "barry.allen@example.com",
-              //     //       password: "SuperSecretPassword"
-              //     //   );
-              //     //   print('Validated');
-              //     // } on FirebaseAuthException catch (e) {
-              //     //   if (e.code == 'user-not-found') {
-              //     //     print('No user found for that email.');
-              //     //   } else if (e.code == 'wrong-password') {
-              //     //     print('Wrong password provided for that user.');
-              //     //   }
-              //     // }
-              //
-              //   }
-              // },
-              onPressed: () => showDialog<String>(
-                context: context,
-                builder: (BuildContext context) => AlertDialog(
-                  title: const Text('AlertDialog Title', textAlign: TextAlign.center),
-                  content: const Text('AlertDialog description', textAlign: TextAlign.center),
-                  actions: <Widget>[
-                    ElevatedButton(
-                      onPressed: () => Navigator.pop(context, 'OK'),
-                      child: const Center(child: const Text('OK')),
+              onPressed: () async {
+                if (_formKey.currentState!.validate()) {
+                  _formKey.currentState!.save();
+                  String errorMessage = "";
+                  bool error = false;
+                  try {
+                    UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                        email: _email.toString(),
+                        password: _password,
+                    );
+                    print(userCredential.user);
+                  } on FirebaseAuthException catch (e) {
+                    error = true;
+                    if (e.code == 'weak-password') {
+                      errorMessage = 'The password provided is too weak.';
+                    } else if (e.code == 'email-already-in-use') {
+                      errorMessage = 'The account already exists for that email.';
+                    }
+                    print('Error: '+  e.code);
+                  } catch (e) {
+                    print(e);
+                  }
+
+                  showDialog<String>(
+                    context: context,
+                    builder: (BuildContext context) => AlertDialog(
+                      title: Text(error ? 'Error' : 'Success', textAlign: TextAlign.center),
+                      content: Text(error ? errorMessage : 'Account Created Successfully', textAlign: TextAlign.center),
+                      actions: <Widget>[
+                        ElevatedButton(
+                          onPressed: () => {
+                            if(error) {
+                              Navigator.pop(context, 'OK')
+                            }
+                            else {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SignInScreen(), // MainScreen();
+                                ),
+                              )
+                            }
+                          },
+                          child: Center(child: Text(error ? 'OK' : 'Sign In')),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  );
+                }
+              },
+              // onPressed: () => showDialog<String>(
+              //   context: context,
+              //   builder: (BuildContext context) => AlertDialog(
+              //     title: const Text('Error', textAlign: TextAlign.center),
+              //     content: const Text('AlertDialog description', textAlign: TextAlign.center),
+              //     actions: <Widget>[
+              //       ElevatedButton(
+              //         onPressed: () => Navigator.pop(context, 'OK'),
+              //         child: const Center(child: const Text('OK')),
+              //       ),
+              //     ],
+              //   ),
+              // ),
               child: Text("Sign Up"),
             ),
           ),
